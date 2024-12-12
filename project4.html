@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exquisite Corpse</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.10.0/p5.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            background: #35424a;
+            color: #ffffff;
+            padding: 10px 20px;
+            text-align: center;
+            width: 100%;
+        }
+        nav {
+            margin: 20px 0;
+        }
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #ffffff;
+        }
+        section {
+            margin: 20px;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Exquisite Corpse</h1>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="project1.html">Lost & Found</a>
+        <a href="project2.html">Face Generator</a>
+        <a href="project3.html">Experimental Clock</a>
+        <a href="project4.html">Exquisite Corpse</a>
+        <a href="project5.html">Optical Illusion</a>
+        <a href="project6.html">Data Portrait</a>
+        <a href="project7.html">Autobiographical Game</a>
+        <a href="about.html">About</a>
+        <a href="reflections.html">Reflections</a>
+    </nav>
+</header>
+<section>
+    <p>Watch the animated figure move! Click on different parts to change their colors!</p>
+</section>
+<script>
+//Group partners: Di, Vicky
+//Changes to the project: change the way of drawing the character make sure the the chracter is created by separate user-defined functions for each major component.
+//Adding a click to change color function 
+let headOffset = 0;
+let bodyOffset = 0;
+let legsOffset = 0;
+let amplitude = 50;
+let speed = 0.1;
+
+// Add color variables for each part
+let headColor;
+let bodyColor;
+let legsColor;
+let leftTentacleColor;
+let rightTentacleColor;
+let centerTentacleColors = []; // Array for center tentacles colors
+
+function setup() {
+    createCanvas(600, 600);
+    stroke(0);
+    noFill();
+    
+    // Initialize colors to white
+    headColor = color(255);
+    bodyColor = color(255);
+    legsColor = color(255);
+    leftTentacleColor = color(255);
+    rightTentacleColor = color(255);
+    centerTentacleColors = [color(255), color(255)]; // Two center tentacles
+}
+
+function mousePressed() {
+    // Check which part was clicked and change its color
+    let newColor = color(random(255), random(255), random(255));
+    
+    // Head section (y: 0-200)
+    if (mouseY < 200) {
+        let headX = 220 + headOffset;
+        if (mouseX > headX - 50 && mouseX < headX + 210) {
+            headColor = newColor;
+        }
+    }
+    // Body section (y: 200-400)
+    else if (mouseY < 400) {
+        let bodyX = 300 + bodyOffset;
+        if (mouseX > bodyX - 140 && mouseX < bodyX + 140) {
+            bodyColor = newColor;
+        }
+    }
+    // Legs and tentacles section (y: 400-600)
+    else {
+        let legsX = 220 + legsOffset;
+        // Main rectangular legs
+        if (mouseX > legsX && mouseX < legsX + 160 && mouseY < 520) {
+            legsColor = newColor;
+        }
+        // Left tentacle
+        else if (mouseX < legsX + 20) {
+            leftTentacleColor = newColor;
+        }
+        // Right tentacle
+        else if (mouseX > legsX + 140) {
+            rightTentacleColor = newColor;
+        }
+        // Center tentacles - check each one separately
+        else {
+            let spacing = 160 / 3;
+            let firstTentacleX = legsX + 20 + spacing;
+            let secondTentacleX = legsX + 20 + 2 * spacing;
+            
+            if (abs(mouseX - firstTentacleX) < 20) {
+                centerTentacleColors[0] = newColor;
+            } else if (abs(mouseX - secondTentacleX) < 20) {
+                centerTentacleColors[1] = newColor;
+            }
+        }
+    }
+}
+
+function draw() {
+    background(255);
+
+    updateOffsets();
+    drawDividers();
+    
+    drawHead(headOffset, 220, 50, 380, 180);
+    drawBody(bodyOffset, 300, 300);
+    drawLegsAndTentacles(legsOffset, 220, 400, 160, 120);
+}
+
+function updateOffsets() {
+    headOffset = sin(frameCount * speed) * amplitude;
+    bodyOffset = sin(frameCount * speed + PI/3) * amplitude;
+    legsOffset = sin(frameCount * speed + 2*PI/3) * amplitude;
+}
+
+function drawDividers() {
+    line(0, 200, 600, 200);
+    line(0, 400, 600, 400);
+}
+
+function drawHead(offset, x1, y1, x2, y2) {
+    push();
+    translate(offset, 0);
+    
+    fill(headColor);
+    drawTrapezoid(x1, y1, x2, y2);
+    drawEyes(250, 140, 350, 140, 30);
+    drawNeck(275, 180, 50, 20);
+    noFill();
+    
+    pop();
+}
+
+function drawTrapezoid(x1, y1, x2, y2) {
+    beginShape();
+    vertex(x1, y1);      
+    vertex(x2, y1);      
+    vertex(x2 + 50, y2); 
+    vertex(x1 - 50, y2); 
+    endShape(CLOSE);
+}
+
+function drawEyes(x1, y, x2, y2, size) {
+    fill(0);
+    circle(x1, y, size);
+    circle(x2, y2, size);
+    noFill();
+}
+
+function drawNeck(x, y, w, h) {
+    rect(x, y, w, h);
+}
+
+function drawBody(offset, centerX, centerY) {
+    push();
+    translate(offset, 0);
+    
+    fill(bodyColor);
+    ellipse(centerX, centerY, 280, 190);
+    drawClasps(centerX, centerY);
+    drawArms(165, 280, 435, 280);
+    noFill();
+    
+    pop();
+}
+
+function drawClasps(x, y) {
+    circle(x, y - 60, 20);
+    circle(x, y - 20, 20);
+    circle(x, y + 20, 20);
+}
+
+function drawArms(x1, y1, x2, y2) {
+    line(x1, y1, x1 - 65, y1 - 80);
+    line(x2, y2, x2 + 65, y2 - 80);
+}
+
+function drawLegsAndTentacles(offset, x, y, w, h) {
+    push();
+    translate(offset, 0);
+    
+    // Rectangular legs
+    fill(legsColor);
+    rect(x, y, w, h);
+    
+    // Center tentacles
+    let spacing = (w - 40) / 3;
+    for(let i = 0; i < 2; i++) {
+        fill(centerTentacleColors[i]);
+        ellipse(x + 20 + ((i+1) * spacing), y + h, 40, 100);
+    }
+    
+    // Left combined tentacle
+    fill(leftTentacleColor);
+    drawCombinedTentacle(x + 20, y + h, -1);
+    
+    // Right combined tentacle
+    fill(rightTentacleColor);
+    drawCombinedTentacle(x + w - 20, y + h, 1);
+    
+    noFill();
+    pop();
+}
+
+function drawCombinedTentacle(x, y, direction) {
+    beginShape();
+    
+    // Right side curve (going up)
+    let points = [];
+    for (let t = 0; t <= 1; t += 0.05) {
+        let px = x + (direction * t * 40);
+        let py = y - (t * t * 80);
+        points.push({x: px + (20 * direction), y: py});
+        vertex(px + (20 * direction), py);
+    }
+    
+    // Left side curve (going down)
+    for (let i = points.length - 1; i >= 0; i--) {
+        vertex(points[i].x - (40 * direction), points[i].y);
+    }
+    
+    endShape(CLOSE);
+}
+</script>
+</body>
+</html>

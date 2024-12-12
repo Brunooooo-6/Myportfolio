@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autobiographical Game</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.10.0/p5.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            background: #35424a;
+            color: #ffffff;
+            padding: 10px 20px;
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        nav {
+            margin: 20px 0;
+        }
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #ffffff;
+        }
+        section {
+            margin: 20px;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 80%;
+            max-width: 800px;
+        }
+        #game-container {
+            margin: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        canvas {
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Autobiographical Game</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="project1.html">Lost & Found</a>
+            <a href="project2.html">Face Generator</a>
+            <a href="project3.html">Experimental Clock</a>
+            <a href="project4.html">Exquisite Corpse</a>
+            <a href="project5.html">Optical Illusion</a>
+            <a href="project6.html">Data Portrait</a>
+            <a href="project7.html">Autobiographical Game</a>
+            <a href="about.html">About</a>
+            <a href="reflections.html">Reflections</a>
+        </nav>
+    </header>
+    <section>
+        <p>Click through to experience the story, find the kitty!</p>
+        <p>Controls: Use A and D to move left and right. Use W and S near the stairs to move up and down.</p>
+    </section>
+    <div id="game-container"></div>
+
+    <script>
+        let scenes = [];
+        let currentScene = 0;
+        let player;
+        let cat;
+        let isGameScene = false;
+        let hasCaughtCat = false;
+        let floors = [450, 350, 250, 150];
+        let stairZones = {x: 50, width: 60};
+        let gameStarted = false;
+        let gameCompleted = false;
+
+        class Character {
+            constructor(x, y, isPlayer) {
+                this.x = x;
+                this.y = y;
+                this.speed = 5;
+                this.currentFloor = 0;
+                this.isPlayer = isPlayer;
+                this.size = isPlayer ? 20 : 30;
+                this.onStairs = false;
+            }
+
+            move() {
+                if (this.isPlayer) {
+                    if (keyIsDown(65)) this.x -= this.speed;
+                    if (keyIsDown(68)) this.x += this.speed;
+
+                    if (this.isNearStairs()) {
+                        if (keyIsDown(87) && this.y > floors[3]) {
+                            this.y -= this.speed;
+                            this.onStairs = true;
+                        }
+                        if (keyIsDown(83) && this.y < floors[0]) {
+                            this.y += this.speed;
+                            this.onStairs = true;
+                        }
+                    }
+
+                    if (!this.onStairs || !this.isNearStairs()) {
+                        let snapToFloor = false;
+                        for (let i = 0; i < floors.length; i++) {
+                            if (Math.abs(this.y - floors[i]) < 10) {
+                                this.y = floors[i];
+                                this.currentFloor = i;
+                                snapToFloor = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!snapToFloor) {
+                            for (let i = 0; i < floors.length; i++) {
+                                if (this.y < floors[i]) {
+                                    this.y = floors[i];
+                                    this.currentFloor = i;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (!this.isNearStairs()) {
+                        this.onStairs = false;
+                    }
+                } else if (!hasCaughtCat) {
+                    let distToPlayer = dist(this.x, this.y, player.x, player.y);
+                    
+                    if (distToPlayer < 150) {
+                        let direction = (this.x < player.x) ? -1 : 1;
+                        this.x += this.speed * direction;
+                        
+                        if (this.isNearStairs() && distToPlayer < 100) {
+                            if (this.currentFloor < 3 && player.currentFloor <= this.currentFloor) {
+                                this.currentFloor++;
+                                this.y = floors[this.currentFloor];
+                            } else if (this.currentFloor > 0 && player.currentFloor >= this.currentFloor) {
+                                this.currentFloor--;
+                                this.y = floors[this.currentFloor];
+                            }
+                        }
+                    } else {
+                        if (frameCount % 60 === 0) {
+                            this.x += random(-1, 1) * this.speed;
+                        }
+                    }
+                }
+
+                this.x = constrain(this.x, 30, width - 30);
+                this.y = constrain(this.y, floors[3], floors[0]);
+
+                if (hasCaughtCat) {
+                    cat.x = player.x;
+                    cat.y = player.y - 25;
+                }
+            }
+
+            isNearStairs() {
+                return this.x > stairZones.x && this.x < stairZones.x + stairZones.width;
+            }
+
+            display() {
+                if (this.isPlayer) {
+                    fill(255, 0, 0);
+                    ellipse(this.x, this.y, this.size);
+                } else {
+                    fill(0);
+                    ellipse(this.x, this.y, this.size);
+                    triangle(this.x - 15, this.y - 15, this.x - 5, this.y - 25, this.x - 5, this.y - 15);
+                    triangle(this.x + 15, this.y - 15, this.x + 5, this.y - 25, this.x + 5, this.y - 15);
+                }
+            }
+        }
+
+        function preload() {
+            scenes[0] = loadImage('https://i.imgur.com/eiRIMT7.jpeg');
+            scenes[1] = loadImage('https://i.imgur.com/NNcGrQI.jpeg');
+            scenes[2] = loadImage('https://i.imgur.com/xoyT0pY.jpeg');
+            scenes[3] = loadImage('https://i.imgur.com/d3imtcL.jpeg');
+        }
+
+        function setup() {
+            let canvas = createCanvas(400, 600);
+            canvas.parent('game-container');
+            player = new Character(width/2, floors[0], true);
+            cat = new Character(width - 50, floors[3], false);
+            gameStarted = true;
+        }
+
+        function draw() {
+            background(255);
+            
+            if (!gameStarted || !scenes[currentScene]) {
+                return;
+            }
+            
+            if (currentScene === 3 && !gameCompleted) {
+                drawGameScene();
+            } else {
+                image(scenes[currentScene], 0, 0, width, height);
+            }
+        }
+
+        function drawGameScene() {
+            background('#FF8C00');
+            
+            fill('#8B4513');
+            rect(30, 100, width - 60, 400);
+            
+            fill('#DEB887');
+            for (let y of floors) {
+                rect(30, y, width - 60, 5);
+            }
+            
+            fill('#8B4513');
+            rect(stairZones.x, 150, stairZones.width, 300);
+            
+            stroke(0);
+            for (let y = 150; y <= 450; y += 20) {
+                line(stairZones.x, y, stairZones.x + stairZones.width, y);
+            }
+            noStroke();
+            
+            fill(0, 255, 0);
+            rect(width - 50, floors[0] - 40, 30, 40);
+            
+            player.move();
+            cat.move();
+            
+            if (!hasCaughtCat && dist(player.x, player.y, cat.x, cat.y) < 30) {
+                hasCaughtCat = true;
+            }
+            
+            if (hasCaughtCat && player.x > width - 50 && player.currentFloor === 0) {
+                gameCompleted = true;
+                currentScene = 3;
+                return;
+            }
+            
+            cat.display();
+            player.display();
+        }
+
+        function mousePressed() {
+            if (currentScene < 3 && mouseOverButton()) {
+                currentScene++;
+            }
+        }
+
+        function mouseOverButton() {
+            if (currentScene === 0) {
+                return mouseX > 262.5 && mouseX < 337.5 && mouseY > 200 && mouseY < 250;
+            } else if (currentScene === 1) {
+                return mouseX > 55 && mouseX < 105 && mouseY > 125 && mouseY < 175;
+            } else if (currentScene === 2) {
+                return mouseX > 235 && mouseX < 265 && mouseY > 525 && mouseY < 575;
+            }
+            return false;
+        }
+    </script>
+</body>
+</html>

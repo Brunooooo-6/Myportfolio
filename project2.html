@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            background: #35424a;
+            color: #ffffff;
+            padding: 10px 20px;
+            text-align: center;
+            width: 100%;
+        }
+        nav {
+            margin: 20px 0;
+        }
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #ffffff;
+        }
+        .content-container {
+            max-width: 800px;
+            margin: 20px;
+            padding: 20px;
+        }
+        .project-description {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        canvas {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Face Generator</h1>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="project1.html">Lost & Found</a>
+        <a href="project2.html">Face Generator</a>
+        <a href="project3.html">Experimental Clock</a>
+        <a href="project4.html">Exquisite Corpse</a>
+        <a href="project5.html">Optical Illusion</a>
+        <a href="project6.html">Data Portrait</a>
+        <a href="project7.html">Autobiographical Game</a>
+        <a href="about.html">About</a>
+        <a href="reflections.html">Reflections</a>
+    </nav>
+</header>
+
+<div class="content-container">
+    <div class="project-description">
+        <h2>About this Project</h2>
+        <p>Move your mouse to control the pumpkin's position and click to change between different expressions: happy, angry, and shocked!</p>
+        <p>Each pumpkin has its own unique size and color variation.</p>
+    </div>
+</div>
+
+<script>
+let pumpkins = [];
+let currentPumpkin = 0;
+
+function setup() {
+    createCanvas(400, 400);
+    
+    pumpkins = [
+        new Pumpkin('happy', color(255, 140, 0)),
+        new Pumpkin('angry', color(255, 100, 0)),
+        new Pumpkin('shocked', color(255, 160, 0))
+    ];
+}
+
+function draw() {
+    background(50);
+    
+    pumpkins[currentPumpkin].updatePosition(mouseX, mouseY);
+    pumpkins[currentPumpkin].draw();
+
+    fill(255);
+    textSize(16);
+    text("Click to change pumpkin", 10, 30);
+}
+
+function mousePressed() {
+    if (currentPumpkin < pumpkins.length - 1) {
+        currentPumpkin++;
+    } else {
+        currentPumpkin = 0;
+    }
+}
+
+class Pumpkin {
+    constructor(expression, color) {
+        this.expression = expression;
+        this.color = color;
+        this.x = width / 2;
+        this.y = height / 2;
+        this.size = random(150, 250);
+    }
+    
+    updatePosition(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+    
+    draw() {
+        push();
+        translate(this.x, this.y);
+        
+        fill(this.color);
+        ellipse(0, 0, this.size, this.size * 0.9);
+        
+        fill(0);
+        switch(this.expression) {
+            case 'happy':
+                arc(0, 20, 80, 80, 0, PI, CHORD);
+                ellipse(-30, -20, 20, 30);
+                ellipse(30, -20, 20, 30);
+                break;
+            case 'angry':
+                arc(0, 30, 80, 80, PI, TWO_PI, CHORD);
+                triangle(-30, -10, -40, -30, -20, -30);
+                triangle(30, -10, 40, -30, 20, -30);
+                break;
+            case 'shocked':
+                ellipse(0, 30, 60, 60);
+                ellipse(-30, -20, 30, 30);
+                ellipse(30, -20, 30, 30);
+                break;
+        }
+        
+        this.drawStem();
+        
+        pop();
+    }
+    
+    drawStem() {
+        push();
+        fill(34, 139, 34);
+        beginShape();
+        vertex(-10, -this.size * 0.4);
+        bezierVertex(
+            -5, -this.size * 0.5, 
+            5, -this.size * 0.5, 
+            10, -this.size * 0.4
+        );
+        bezierVertex(
+            15, -this.size * 0.3,
+            0, -this.size * 0.25,
+            -15, -this.size * 0.3
+        );
+        endShape(CLOSE);
+        pop();
+    }
+    
+    randomizeColor() {
+        this.color = color(random(200, 255), random(100, 160), 0);
+    }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lost & Found</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            background: #35424a;
+            color: #ffffff;
+            padding: 10px 20px;
+            text-align: center;
+            width: 100%;
+        }
+        nav {
+            margin: 20px 0;
+        }
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #ffffff;
+        }
+        .content-container {
+            max-width: 800px;
+            margin: 20px;
+            padding: 20px;
+        }
+        .project-description {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        canvas {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Lost & Found</h1>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="project1.html">Lost & Found</a>
+        <a href="project2.html">Face Generator</a>
+        <a href="project3.html">Experimental Clock</a>
+        <a href="project4.html">Exquisite Corpse</a>
+        <a href="project5.html">Optical Illusion</a>
+        <a href="project6.html">Data Portrait</a>
+        <a href="project7.html">Autobiographical Game</a>
+        <a href="about.html">About</a>
+        <a href="reflections.html">Reflections</a>
+    </nav>
+</header>
+
+<div class="content-container">
+    <div class="project-description">
+        <h2>About this Project</h2>
+        <p>This interactive animation features a rotating cap with different blend modes. Click the button to explore various visual effects created by different blend modes.</p>
+        <p>Created by: Bruno Li</p>
+        <p>Partner: Richard Zhang</p>
+    </div>
+</div>
+
+<script>
+let blendModes;
+let index = 0;
+let currBlendMode;
+let angle = 0;
+
+function setup() {
+    blendModes = [
+        BLEND,
+        ADD,
+        DARKEST,
+        LIGHTEST,
+        DIFFERENCE,
+        EXCLUSION,
+        MULTIPLY,
+        OVERLAY,
+        HARD_LIGHT,
+        SOFT_LIGHT,
+        DODGE,
+        BURN
+    ];
+    
+    currBlendMode = blendModes[index];
+    
+    createCanvas(600,400);
+    textSize(20);
+    
+    let btn = createButton("Change blendMode");
+    btn.position(30, 450);
+    btn.mousePressed(changeBlendMode);
+}
+
+function draw() {
+    clear();
+    text('Click on the button to change the blend mode', 20, 20);
+    text("Current blendMode: " + currBlendMode, 20, 50);
+    
+    blendMode(currBlendMode);
+    
+    angle += 0.01;
+    
+    drawCap(angle);
+}
+
+function drawCap(rot) {
+    push();
+    
+    translate(300, 200);
+    rotate(rot);
+    
+    fill(33, 60, 99);
+    arc(0, 0, 200, 150, PI, 0);
+    
+    fill(48, 87, 145);
+    circle(0, -80, 20);
+    
+    fill(0);
+    beginShape();
+    vertex(-100, 0);
+    vertex(100, 0);
+    vertex(75, 25);
+    vertex(-75, 25);
+    endShape(CLOSE);
+    
+    stroke(255);
+    strokeWeight(2);
+    line(-30, -70, 30, -70);
+    
+    pop();
+}
+
+function changeBlendMode() {
+    if (index < blendModes.length - 1)
+        index++;
+    else
+        index = 0;
+    currBlendMode = blendModes[index];
+}
+</script>
+</body>
+</html>

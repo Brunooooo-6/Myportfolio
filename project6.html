@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Portrait</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.10.0/p5.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            background: #35424a;
+            color: #ffffff;
+            padding: 10px 20px;
+            text-align: center;
+            width: 100%;
+        }
+        nav {
+            margin: 20px 0;
+        }
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #ffffff;
+        }
+        section {
+            margin: 20px;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Data Portrait</h1>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="project1.html">Lost & Found</a>
+        <a href="project2.html">Face Generator</a>
+        <a href="project3.html">Experimental Clock</a>
+        <a href="project4.html">Exquisite Corpse</a>
+        <a href="project5.html">Optical Illusion</a>
+        <a href="project6.html">Data Portrait</a>
+        <a href="project7.html">Autobiographical Game</a>
+        <a href="about.html">About</a>
+        <a href="reflections.html">Reflections</a>
+    </nav>
+</header>
+<section>
+    <p>Visualizing weekly screen time data</p>
+</section>
+<script>
+    let data;
+    let categories;
+    let colors;
+    let currentDay = 0;
+    let animationProgress = 0;
+    let centerSize;
+    let graphSize;
+
+    function setup() {
+        createCanvas(600, 600);
+        graphSize = width * 1.7;
+        centerSize = graphSize / 8;
+        textAlign(CENTER, CENTER);
+        angleMode(DEGREES);
+
+        data = [
+            {day: 'Monday', wechat: 40, chrome: 30, youtube: 70, music: 30, others: 20},
+            {day: 'Tuesday', wechat: 50, chrome: 40, youtube: 60, music: 40, others: 20},
+            {day: 'Wednesday', wechat: 40, chrome: 30, youtube: 50, music: 30, others: 20},
+            {day: 'Thursday', wechat: 50, chrome: 20, youtube: 60, music: 40, others: 30},
+            {day: 'Friday', wechat: 40, chrome: 30, youtube: 50, music: 30, others: 20},
+            {day: 'Saturday', wechat: 70, chrome: 60, youtube: 120, music: 60, others: 30},
+            {day: 'Sunday', wechat: 49, chrome: 48, youtube: 95, music: 54, others: 14}
+        ];
+
+        categories = ['WeChat&Instagram', 'Chrome&Safari', 'Youtube&Bilibili', 'Music', 'Others'];
+        colors = ['#FFEBAD', '#FEB737', '#A7B5FE', '#7BBBCO', '#543786'];
+    }
+
+    function draw() {
+        background(0);
+
+        fill(255);
+        textSize(28);
+        textStyle(BOLD);
+        text(data[currentDay].day, width/2, 40);
+
+        let total = calculateTotal(data[currentDay]);
+
+        let startAngle = -90;
+        const sectorAngle = 72;
+        const maxSize = graphSize;
+
+        push();
+        translate(width/2, height/2);
+        rotate(animationProgress * 180);
+
+        let sizeMultiplier = calculateSizeMultiplier(animationProgress);
+
+        for (let i = 0; i < categories.length; i++) {
+            let category = getCategoryName(categories[i]);
+            let value = data[currentDay][category];
+            let sectorSize = map(value, 0, total, centerSize, maxSize) * sizeMultiplier;
+
+            fill(colors[i]);
+            arc(0, 0, sectorSize, sectorSize, startAngle, startAngle + sectorAngle);
+            startAngle += sectorAngle;
+        }
+        pop();
+
+        fill(0);
+        ellipse(width/2, height/2, centerSize);
+
+        fill(255);
+        textSize(centerSize / 8);
+        text("Screen Time", width/2, height/2);
+
+        textSize(10);
+        let labelY = height - 20;
+        for (let i = 0; i < categories.length; i++) {
+            let labelX = map(i, 0, categories.length - 1, 60, width - 60);
+            fill(colors[i]);
+            ellipse(labelX, labelY - 12, 8);
+            fill(255);
+            text(categories[i], labelX, labelY);
+        }
+
+        animationProgress += 0.01;
+        if (animationProgress >= 1) {
+            animationProgress = 0;
+            currentDay = (currentDay + 1) % data.length;
+        }
+    }
+
+    function calculateTotal(dayData) {
+        let sum = 0;
+        for (let key in dayData) {
+            if (typeof dayData[key] === 'number') {
+                sum += dayData[key];
+            }
+        }
+        return sum;
+    }
+
+    function calculateSizeMultiplier(progress) {
+        if (progress <= 0.5) {
+            return map(progress, 0, 0.5, 0, 1);
+        } else {
+            return map(progress, 0.5, 1, 1, 0);
+        }
+    }
+
+    function getCategoryName(category) {
+        return category.toLowerCase().split('&')[0];
+    }
+</script>
+</body>
+</html>

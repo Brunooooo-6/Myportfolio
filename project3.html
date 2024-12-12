@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Experimental Clock</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.10.0/p5.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            background: #35424a;
+            color: #ffffff;
+            padding: 10px 20px;
+            text-align: center;
+            width: 100%;
+        }
+        nav {
+            margin: 20px 0;
+        }
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #ffffff;
+        }
+        section {
+            margin: 20px;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Experimental Clock</h1>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="project1.html">Lost & Found</a>
+        <a href="project2.html">Face Generator</a>
+        <a href="project3.html">Experimental Clock</a>
+        <a href="project4.html">Exquisite Corpse</a>
+        <a href="project5.html">Optical Illusion</a>
+        <a href="project6.html">Data Portrait</a>
+        <a href="project7.html">Autobiographical Game</a>
+        <a href="about.html">About</a>
+        <a href="reflections.html">Reflections</a>
+    </nav>
+</header>
+
+<section>
+    <p>This project visualizes the passage of time using various containers: a cup, a bottle, and a bathtub. Each container fills according to different time intervals.</p>
+</section>
+
+<script>
+    let cupFill = 0;
+    let bottleFill = 0;
+    let bathtubFill = 0;
+    let lastSecond = -1;
+
+    function setup() {
+        createCanvas(600, 600);
+    }
+
+    function draw() {
+        background(200);
+        
+        // Cup (fills in 1 second)
+        drawCup(100, 500, 60, 80, cupFill, 'Cup');
+        if (second() !== 0) {
+            cupFill = map(millis() % 1000, 0, 1000, 0, 100);
+        }
+        
+        // Bottle (fills in 1 minute)
+        drawBottle(250, 500, 50, 120, bottleFill, 'Bottle');
+        let currentSecond = second();
+        if (currentSecond !== lastSecond) {
+            if (bottleFill < 100) {
+                bottleFill += 100 / 60; 
+            } else {
+                bottleFill = 0; // Reset when full
+            }
+            lastSecond = currentSecond;
+        }
+        
+        // Bathtub (fills in 1 hour)
+        drawBathtub(400, 500, 180, 150, bathtubFill, 'Bathtub');
+        if (frameCount % 60 === 0 && bathtubFill < 100) {
+            bathtubFill += 100 / 3600; 
+        }
+        
+        // Display time
+        fill(0);
+        textSize(20);
+        textAlign(CENTER);
+        text(`Time: ${nf(hour(), 2)}:${nf(minute(), 2)}:${nf(second(), 2)}`, width / 2, 50);
+    }
+
+    function drawCup(x, y, w, h, fillPercentage, label) {
+        push();
+        translate(x, y);
+        
+        // Cup 
+        noFill();
+        stroke(0);
+        beginShape();
+        vertex(w * 0.2, 0);
+        vertex(0, -h);
+        vertex(w, -h);
+        vertex(w * 0.8, 0);
+        endShape(CLOSE);
+        
+        // Water fill
+        noStroke();
+        fill(0, 150, 255);
+        let fillHeight = map(fillPercentage, 0, 100, 0, h);
+        beginShape();
+        vertex(w * 0.2, 0);
+        vertex(lerp(w * 0.2, 0, fillHeight / h), -fillHeight);
+        vertex(lerp(w * 0.8, w, fillHeight / h), -fillHeight);
+        vertex(w * 0.8, 0);
+        endShape(CLOSE);
+        
+        // Label
+        fill(0);
+        textSize(12);
+        textAlign(CENTER);
+        text(label, w / 2, 20);
+        
+        pop();
+    }
+
+    function drawBottle(x, y, w, h, fillPercentage, label) {
+        push();
+        translate(x, y);
+        
+        // Rectangular bottle 
+        noFill();
+        stroke(0);
+        rect(0, -h, w, h);
+        
+        // Water fill
+        noStroke();
+        fill(0, 150, 255);
+        let fillHeight = map(fillPercentage, 0, 100, 0, h);
+        rect(0, 0 - fillHeight, w, fillHeight);
+        
+        // Label
+        fill(0);
+        textSize(12);
+        textAlign(CENTER);
+        text(label, w / 2, 20);
+        
+        pop();
+    }
+
+    function drawBathtub(x, y, w, h, fillPercentage, label) {
+        push();
+        translate(x, y);
+        
+        // Bathtub 
+        noFill();
+        stroke(0);
+        beginShape();
+        vertex(0, 0);
+        vertex(0, -h * 0.2);
+        bezierVertex(0, -h, w * 0.1, -h, w * 0.2, -h);
+        vertex(w * 0.8, -h);
+        bezierVertex(w * 0.9, -h, w, -h, w, -h * 0.2);
+        vertex(w, 0);
+        endShape(CLOSE);
+        
+        // Water fill
+        noStroke();
+        fill(0, 150, 255);
+        let fillHeight = map(fillPercentage, 0, 100, 0, h);
+        beginShape();
+        vertex(0, 0);
+        vertex(0, -fillHeight);
+        if (fillHeight > h * 0.2) {
+            bezierVertex(0, -fillHeight, w * 0.1, -fillHeight, w * 0.2, -fillHeight);
+            vertex(w * 0.8, -fillHeight);
+            bezierVertex(w * 0.9, -fillHeight, w, -fillHeight, w, -fillHeight);
+        } else {
+            vertex(w, -fillHeight);
+        }
+        vertex(w, 0);
+        endShape(CLOSE);
+        
+        // Label
+        fill(0);
+        textSize(16);
+        textAlign(CENTER);
+        text(label, w / 2, 20);
+        
+        pop();
+    }
+</script>
+
+</body>
+</html>
